@@ -66,7 +66,7 @@ commentaryRouter.post('/', async (req, res) => {
     }
 
     try {
-        const [result] = await db
+        const [entry] = await db
             .insert(commentary)
             .values({
                 ...bodyParsed.data,
@@ -74,7 +74,12 @@ commentaryRouter.post('/', async (req, res) => {
             })
             .returning()
 
-        res.status(201).json({ data: result })
+        if (res.app.locals.broadcastCommentary) {
+            res.app.locals.broadcastCommentary(entry.matchId, entry)
+        }
+
+        res.status(201).json({ data: entry })
+
     } catch (error) {
         console.error('Error creating commentary:', error)
         res.status(500).json({
@@ -83,4 +88,3 @@ commentaryRouter.post('/', async (req, res) => {
         })
     }
 })
-
